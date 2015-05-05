@@ -1,0 +1,69 @@
+% в конечной версии draft заменить final
+\documentclass[oneside, draft, 14pt, a4paper]{extreport}
+\renewcommand{\rmdefault}{ftm} % Times New Roman
+
+\usepackage[utf8]{inputenc}
+\usepackage[russianb]{babel}
+
+% красная строка для всех абзацев
+\usepackage{indentfirst}
+
+% отступы
+\usepackage{vmargin}
+\setmarginsrb{3cm}{2cm}{1.5cm}{2cm}{0pt}{0pt}{0pt}{1.3cm}
+
+% полуторный интервал только для текста
+\usepackage{setspace}
+\onehalfspacing
+
+% новый вид главы TODO:добавить центрирование
+\newcommand\Chapter[1]
+{
+	\refstepcounter{chapter}
+	\chapter*
+	{
+		\begin{huge}		
+			\textbf{\centering \chaptername\ \arabic{chapter}.\\}
+		\end{huge}
+		\raggedright \centering #1
+		\bigskip \bigskip
+	}
+	\addcontentsline{toc}{chapter}{\arabic{chapter}. #1}
+}
+
+% точки в оглавлении
+\usepackage{tocstyle}
+\usetocstyle{allwithdot}
+
+% в конечной версии fussy заменить на sloppy
+\fussy
+
+\begin{document}
+
+\renewcommand{\contentsname}{\centering Оглавление}
+\tableofcontents
+\thispagestyle{empty}
+
+\chapter*{\centering Введение}
+\addcontentsline{toc}{chapter}{Введение}
+
+\Chapter{<название главы>}
+
+\Chapter{<название главы>}
+
+\Chapter{<название главы>}
+
+\chapter*{\centering Заключение}
+\addcontentsline{toc}{chapter}{Заключение}
+
+\renewcommand{\bibname}{\centering Список литературы}
+\begin{thebibliography}{00}
+\addcontentsline{toc}{chapter}{Список литературы}
+
+\bibitem{klimanov:manual} Климанов ~В.П., Руделёв ~Р.А.
+<<Моделирование информационных систем. Математические модели для разработки информационных систем: методика и решения>>.
+- учебное пособие, Издательский центр ФГБОУ ВПО МГТУ Московский госсударственный технологический университет <<СТАНКИН>>, 2014 год. 46 стр.
+
+\end{thebibliography}
+
+\end{document}
