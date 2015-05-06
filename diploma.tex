@@ -16,24 +16,46 @@
 \usepackage{setspace}
 \onehalfspacing
 
-% новый вид главы TODO:добавить центрирование
+% --------------------- определение команд рубрикации ---------------------
 \newcommand\Chapter[1]
 {
 	\refstepcounter{chapter}
 	\chapter*
 	{
 		\begin{huge}		
-			\textbf{\centering \chaptername\ \arabic{chapter}.\\}
+			\textbf
+			{
+				\raggedright \centering
+				\chaptername\ \arabic{chapter}. #1\\
+			}
 		\end{huge}
-		\raggedright \centering #1
-		\bigskip \bigskip
+		\bigskip
 	}
+	
 	\addcontentsline{toc}{chapter}{\arabic{chapter}. #1}
 }
+
+\newcommand\Section[1]
+{
+	\refstepcounter{section}
+	\section*
+	{
+		\raggedright \centering
+		\arabic{chapter}. \arabic{section}. #1
+	}
+	
+	\addcontentsline{toc}{section}{\arabic{chapter}. \arabic{section}. #1}
+}
+% -------------------------------------------------------------------------
 
 % точки в оглавлении
 \usepackage{tocstyle}
 \usetocstyle{allwithdot}
+
+% точка вместо квадратных скобок в списке литературы
+\makeatletter
+\renewcommand*{\@biblabel}[1]{\hfill#1.}
+\makeatother
 
 % в конечной версии fussy заменить на sloppy
 \fussy
@@ -47,11 +69,11 @@
 \chapter*{\centering Введение}
 \addcontentsline{toc}{chapter}{Введение}
 
-\Chapter{<название главы>}
+\Chapter{<Аналитическая часть>}
 
-\Chapter{<название главы>}
+\Chapter{<Теоретичская часть>}
 
-\Chapter{<название главы>}
+\Chapter{<Проектная часть>}
 
 \chapter*{\centering Заключение}
 \addcontentsline{toc}{chapter}{Заключение}
@@ -61,8 +83,14 @@
 \addcontentsline{toc}{chapter}{Список литературы}
 
 \bibitem{klimanov:manual} Климанов ~В.П., Руделёв ~Р.А.
-<<Моделирование информационных систем. Математические модели для разработки информационных систем: методика и решения>>.
-- учебное пособие, Издательский центр ФГБОУ ВПО МГТУ Московский госсударственный технологический университет <<СТАНКИН>>, 2014 год. 46 стр.
+Моделирование информационных систем. Математические модели для разработки информационных систем: методика и решения: учебное пособие
+--- Москва: Издательский центр ФГБОУ ВПО МГТУ Московский госсударственный технологический университет <<СТАНКИН>>, 2014.
+--- 46 с.
+
+\bibitem{vishnevksy} Вишневский ~В.М.
+Теоретические основы проектирования компьютерных сетей: монография
+--- Москва: Техносфера, 2003.
+--- 512 с.
 
 \end{thebibliography}
 
