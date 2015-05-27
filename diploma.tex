@@ -612,7 +612,7 @@ InputIntensity[stream] = Lambda[stream].Divide(Lambda0[stream]);
 \verb:InputIntensity: - массив векторов, хранящий вероятности поступления сообщений от внешнего источника для каждого потока. \\
 \verb:Lambda[stream]: - вектор интенсивностей \( \lambda^{m} \). \\
 \verb:Lambda0[stream]: - суммарная интенсивность внешнего источника. \\
-\verb:.Divide(): - поэлементное деление вектора на число
+\verb:.Divide(): - поэлементное деление вектора на число.
 
 \Section{Составление и решение уравнений баланса}
 Расширенная матрица системы уравнений баланса получается из матрицы маршрутизации следующим способом:
@@ -654,16 +654,56 @@ private Matrix<double> GetExtendedMatrix(int streamIndex)
 \end{figure}
 
 В программной реализации (рис. \ref{pic:functions_getextendedmatrix}) вызывается функция \verb:GetRoutingMatrix:, возвращающая матрицу маршрутизации для заданного потока и преоразует её в соответствии с представленным алгоритмом.
+\clearpage
 
 \Section{Вычисление общих интенсивностей потоков}
+Вычисления общих интенсивностей потоков \( \lambda_{i}^{'m} \) (\ref{subsection:balanceEquations}) в программной реализации имеет следующий вид:
+\begin{verbatim}
+LambdaBar[stream] = E[stream].Multiply(Lambda0[stream]);
+\end{verbatim}
+Где: \\
+\verb:E[stream]: - вектор значений коэффициентов передачи \( e_{i}^{m} \) для потока \( m =  \) \verb:stream:,
+полученные при решении системы уравнений баланса. \\
+\verb:Lambda0[stream]: - значениt суммарной интенсивности всех внешних потоков типа \( m =  \) \verb:stream:. \\
+\verb:.Multiply(): - поэлементное деление вектора на число.
 
 \Section{Вычисление коэффициентов загрузки}
+В соответствии с формулами из \ref{subsection:coefficientOfLoading} коэффициент загрузки вычисляется следующим образом:
+\begin{verbatim}
+RoTotal = RoTotal.AddElementWise(RoBar.Last());
+\end{verbatim}
+Где: \\
+\verb:RoBar[stream] = LambdaBar[stream].DivideElementWise(Mu[stream]): - вектор коэффициентов использования \( \rho_{i}^{m}, m =  \) \verb:stream:.
 
 \Section{Вычисление стационарных ВВХ}
+\begin{figure}[h!]
+	\begin{listing}{1}
+private void ComputeStationaryPTC()
+{
+	for (int i = 0; i < NodesCount; i++)
+	{
+		double sum = 0.0;
+		for (int stream = 0; stream < StreamsCount; stream++)
+		sum += RoBar[stream][i] / Mu[stream][i];
+
+		Ws.AddElement(sum / (1 - RoTotal[i]));
+	}
+
+	for (int stream = 0; stream < StreamsCount; stream++)
+	{
+		Us.Add( Ws.AddElementWise(Mu[stream].Pow( -1 )) );
+		Ls.Add( LambdaBar[stream].MultiplyElementWise( Ws ) );
+		Ns.Add( LambdaBar[stream].MultiplyElementWise( Us[stream]) );
+	}
+}
+	\end{listing}
+\end{figure}
 
 \Section{Вычисление интегральных ВВХ}
 
+
 \Section{Как использовать программу}
+
 
 \Chapter{<Модельный эксперимент>}
 
