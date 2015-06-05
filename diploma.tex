@@ -10,6 +10,14 @@
 \usepackage{moreverb}
 \usepackage[titletoc]{appendix}
 
+% flowcharts
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,
+	decorations.pathreplacing,decorations.pathmorphing}
+
+% landscape orientation
+\usepackage{lscape}
+
 % красная строка для всех абзацев
 \usepackage{indentfirst}
 
@@ -514,6 +522,7 @@ i = \overline{1, n} \]
 \Subsection{Вероятность выбора маршрута}
 \label{subsection:pathsProbabilities}
 Для вычисления интегральных ВВХ необходимо определить вероятности выбора альтернативных маршрутов (см. \ref{subsection:iptc}).
+
 Для этого нужно учитывать вероятности перехода между узлами, заданные маршрутной матрицей \( P^{m} \) (см. \ref{subsection:routingMatrix}), и нормирующее условие
 \( \sum\limits_{k = 1}^{l} \beta_{k} = 1 \), указывающее, один из маршрутов будет обязательно выбран.
 
@@ -531,7 +540,174 @@ i = \overline{1, n} \]
 \[ H_{i} = \prod\limits_{ \substack{ j = 1 \\ j \neq i } }^{n} \frac{ \mu_{j} - \lambda_{j}^{'} }{ \mu_{j} - \lambda_{j}^{'} - \mu_{i} - \lambda_{i}^{'} } \]
 где \( n \) - количество узлов в маршруте.
 
+\Section{Определение интенсивностей обслуживающих приборов, работающих на основе технологий семейства Ethernet}
+\label{section:ehernet}
+Стандарт Ethernet определяет длину служебных полей кадра и преамбулу по 18 и 8 байт соответственно. От сюда следует что длина кадра в битах равна \( 8 * (X + 26), X \) - длина поля данных.
+Время передачи битов кадра определяется битовыми интервалами \( bt = \frac{1}{S}, \: S \) - битовая скорость.
+Для передачи кадра длиной \( X \) потребуется время равное \( 8 * (X + 26) * bt \). Прибавив межкадровый интервал \( IFG = 96 * bt \) получим
+период следования кадров с длиной поля данных \( X \).
+\[ T = 8 * (X + 26) * bt + IFG \]
+
+Итенсивность обслуживания \( \mu \), которая характеризует максимальное количество кадров в секунду, обрабатываемых обслуживающим прибором, есть величина обратно пропорциональная периоду \( T \).
+\[ \mu = \frac{1}{T} = \frac{1}{ 8 * (X + 26) * bt + IFG } \]
+
 \Chapter{Программная реализация}
+
+% -------------------------------------------- flowcharts --------------------------------------------
+% Define block styles
+\tikzstyle{decision} = [diamond, draw, fill=white, 
+    text width=6em, text badly centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{sqr_block} = [rectangle, draw, fill=white, 
+    text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{rec_block} = [rectangle, draw, fill=white,
+	text width=10em, text centered, rounded corners, minimum height=2em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=white, node distance=3cm,
+    minimum height=2em]
+    
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[node distance = 2cm, auto]
+	    % nodes
+    		\node [rec_block] (parse) { парсинг аргументов командной строки };
+	    \node [decision, below of=parse, node distance=3.5cm] (log) { нужно создавать лог? };
+	    \node [sqr_block, left of=log, node distance=4.5cm] (create_log) { создание файла для лога };
+	    \node [rec_block, below of=log, node distance=3.5cm] (parse_config) { парсинг конфигурационного файла };
+    	    \node [rec_block, below of=parse_config, node distance=2.3cm] (compute_model) { расчёт параметров модели (рис. \ref{pic:flowchart_computeModel}) };
+    	    \node [decision, below of=compute_model, node distance=3.8cm] (error) { исключения при расчёте параметров? };
+    	    \node [rec_block, left of=error, node distance=6.5cm] (compute_stop) { завершение вычислений };
+    	    \node [rec_block, below of=compute_stop, node distance=3cm] (error_output) { вывод в консоль сообщения об ошибке, в каком месте она возникла и стэк вызовов };
+    	    \node [rec_block, below of=error, node distance=3.8cm] (output) {вывод данных на консоль и, если нужно, в лог};
+    	    \node [rec_block, below of=output, node distance=2.4cm] (plotting) {построение графиков плотностей (рис. \ref{pic:flowchart_graphs}) };
+    		% edges
+    		\path [line] (parse) -- (log);
+    		\path [line] (log) -- node [near start] {да} (create_log);
+    		\path [line] (log) -- node [near start] {нет} (parse_config);
+    		\path [line] (create_log) |- (parse_config);
+    		\path [line] (parse_config) -- (compute_model);
+    		\path [line] (compute_model) -- (error);
+   		\path [line] (error) -- node [near start] {да} (compute_stop);
+    		\path [line] (compute_stop) -- (error_output);
+   		\path [line] (error) -- node [near start] {нет} (output);
+    		\path [line] (output) -- (plotting);
+	\end{tikzpicture}
+	
+	\caption{Общая блок-схема программной реализации}
+	\label{pic:flowchart_common}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[node distance = 2cm, auto]
+		% nodes
+		\node [rec_block] (set_stream) { установка переменной \verb:stream: значения 0 };
+		\node [decision, below of=set_stream, node distance=3.5cm] (stream) {\verb:stream: < числа потоков?};
+		\node [rec_block, right of=stream, node distance=5.6cm] (compute_lambda0) { вычисление уммарной интенсивности внешних источников \( \lambda_{0} \)};
+		\node [rec_block, below of=compute_lambda0, node distance=3cm] (compute_input) { вычисление  входящих интенсивностей для каждого узла сети };
+		\node [rec_block, below of=compute_input, node distance=3.3cm] (compute_lambdaBar) { вычисление стационарных интенсивностей потоков \( \lambda^{'} \) для каждого узла сети };
+		\node [rec_block, below of=compute_lambdaBar, node distance=3.3cm] (compute_rhoBar) { вычисление коэффициентов использования \( \rho^{'} \) для каждого узла сети };
+		\node [rec_block, below of=compute_rhoBar, node distance=3cm] (compute_rho) { вычисление коэффициентов загрузки \( \rho \) для каждого узла сети };
+		\node[rec_block,below of=compute_rho, node distance=2.8cm] (increment_stream) {увеличение переменной \verb:stream: на 1 };
+		
+		\node [rec_block, left of=stream, node distance=5.6cm] (find_paths) { поиск всех путей в сети };
+		\node [rec_block, below of=find_paths] (compute_sptc) { вычисление стационарных ВВХ };
+		\node [rec_block, below of=compute_sptc] (compute_iptc) { вычисление интегральных ВВХ (рис. \ref{pic:flowchart_iptc}) };
+		% edges
+		\path [line] (set_stream) -- (stream);
+		\path [line] (stream) -- node [near start] {да} (compute_lambda0);
+		\path [line] (stream) -- node [near start] {нет} (find_paths);
+		\path [line] (compute_lambda0) -- (compute_input);
+		\path [line] (compute_input) -- (compute_lambdaBar);
+		\path [line] (compute_lambdaBar) -- (compute_rhoBar);
+		\path [line] (compute_rhoBar) -- (compute_rho);
+		\path [line] (compute_rho) -- (increment_stream);
+		\path [line] (increment_stream) -| (stream);
+		\path [line] (find_paths) -- (compute_sptc);
+		\path [line] (compute_sptc) -- (compute_iptc);
+	\end{tikzpicture}
+	
+	\caption{Рассчёт параметров модели}
+	\label{pic:flowchart_computeModel}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[node distance = 2cm, auto]
+		% nodes
+		\node [rec_block] (find_paths) { поиск всех путей между двумя заданными узлами (рис. \ref{pic:flowchart_paths}) };
+		\node [rec_block, below of=find_paths, node distance=3cm] (compute_pathsProb) { вычисление вероятностей выбора для найденных маршрутов };
+		\node [rec_block, below of=compute_pathsProb, node distance=3cm] (compute_iptc) { вычисление интегральных ВВХ для каждого потока };
+		% edges
+		\path [line] (find_paths) -- (compute_pathsProb);
+		\path [line] (compute_pathsProb) -- (compute_iptc);
+	\end{tikzpicture}
+	
+	\caption{Рассчёт интегральных ВВХ}
+	\label{pic:flowchart_iptc}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[node distance = 2cm, auto]
+		% nodes
+		\node [decision] (paths) { начальный и конечный узлы равны? };
+		\node [rec_block, right of=paths, node distance=5.5cm] (error) { выброс исключения };
+		\node [rec_block, below of=paths, node distance=3.5cm] (exclude_loops) { удаляем связи начальной вершины со всеми остальными } ;
+		\node [rec_block, below of=exclude_loops, node distance=2.6cm] (set_node) { установка переменной \verb:node: (промежуточный узел) значения 0 };
+		\node [decision, below of=set_node, node distance=3.8cm] (node) {\verb:node: < числа узлов сети?};
+		\node [rec_block, right of=node, node distance=5.2cm] (node_no) { возвращение списка найденных путей };
+		\node [decision, below of=node, node distance=5.2cm] (link) { связь между \verb:node: и начальным узлом? };
+		\node [rec_block, below of=link, node distance=3.7cm] (link_no) { переход на следующую итерацию };
+		\node [decision, right of=link, node distance=5.3cm] (end) { \verb:node: = конечному узлу? };
+		\node [rec_block, below of=end, node distance=3.6cm] (end_yes) { сохранение пути };
+		\node [decision, right of=end, node distance=5.3cm] (exists) { кол-во овзвращённых путей  > 0? };
+		\node [rec_block, above of=exists, node distance=4cm] (end_no) { рекурсивный вызов этой функции для промежуточного узла };
+		\node [rec_block, below of=exists, node distance=3.7cm] (add) { сохранение найденных путей };
+		% edges
+		\path [line] (paths) -- node [near start] {нет} (exclude_loops);
+		\path [line] (paths) -- node [near start] {да} (error);
+		\path [line] (exclude_loops) -- (set_node);
+		\path [line] (set_node) -- (node);
+		\path [line] (node) -- node [near start] {нет} (node_no);
+		\path [line] (node) -- node [near start] {да} (link);
+		\path [line] (link) -- node [near start] {нет} (link_no);
+		\path [line] (link) -- node [near start] {да} (end);
+		\path [line] (end) |- node [near start] {нет} (end_no);
+		\path [line] (end) -- node [near start] {да} (end_yes);
+		\path [line] (end_no) -- (exists);
+		\path [line] (exists) -- node [near start] {да} (add);
+	\end{tikzpicture}
+	
+	\caption{Поиск всех путей между двумя узлами сети (одна итерация)}
+	\label{pic:flowchart_paths}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[node distance = 2cm, auto]
+		% nodes
+		\node [rec_block] (find_paths) { поиск самого короткого и самого длинного путей в сети };
+		\node [decision, below of=find_paths, node distance=3cm] (equals) { они равны? };
+		\node [sqr_block, left of=equals, node distance=5.5cm] (yes) { остаётся любой из путей };
+		\node [sqr_block, right of=equals, node distance=5.5cm] (no) { остаются оба пути };
+		\node [rec_block, below of=equals, node distance=3.5cm] (compute_density) { вычисление плотностей распределения сообщений в маршрутах };
+		\node [rec_block, below of=compute_density, node distance=2.5cm] (create_plot) { создание графика };
+		\node [rec_block, below of=create_plot] (show_plot) { вывод графика на экран };
+		% edges
+		\path [line] (find_paths) -- (equals);
+   		\path [line] (equals) -- node [near start] {да} (yes);
+   		\path [line] (equals) -- node [near start] {нет} (no);
+   		\path [line] (yes) |- (compute_density);
+  		\path [line] (no) |- (compute_density);  		
+  		\path [line] (compute_density) -- (create_plot);
+		\path [line] (create_plot) -- (show_plot);
+	\end{tikzpicture}
+	
+	\caption{Построение графиков плотностей}
+	\label{pic:flowchart_graphs}
+\end{figure}
+% ----------------------------------------------------------------------------------------------------
+
 \Section{Постановка задачи}
 Программа должна удовлетворять следующим требованиям:
 \begin{enumerate}
@@ -543,7 +719,7 @@ i = \overline{1, n} \]
 Программа будет выполнена в виде консольного приложения, т.к. этого достаточно для поставленной задачи и позволяет сконцентрироваться на реализации и достижении поставленных требований. Также это позволит программе без проблем запускаться на различных операционны системах.
 
 \Section{Программная платформа}
-Выбрана программная платформа Mono --- кроссплатформенная открытая реализация Microsoft .Net Framework.
+Выбрана программная платформа Mono --- кроссплатформенная реализация Microsoft .Net Framework с открытым исходным кодом.
 Mono поддерживает Windows, Linux, BSD, Mac OS X и другие операционные системы и множетсво процессорных платформ, что
 позволяет писать переносимые приложения на C\#.
 Среда разработки --- MonoDevelop.
@@ -599,113 +775,113 @@ Mono поддерживает Windows, Linux, BSD, Mac OS X и другие оп
             
 Разбор XML файла осуществляется с помощью стандартных средств языка C\# из пространств имён System.Xml и System.Xml.Linq.
             
-\Section{Вычисление вероятностей поступления сообщений из внешнего источника}
-Вероятность поступления сообщений из внешнего источника в узел сети \( M_{i} \) для потока \( m \) есть отношение интенсивности поступления сообщений из внешнего источника в узел \( M_{i} \) к суммарной интенсивности внешнего источника.
-\[ P_{0i}^{m} = \frac{\lambda_{i}^{m}}{\lambda_{0}^{m}}, \: \lambda_{0}^{m} = \sum\limits_{i = 1}^{n} \lambda_{i}^{m} \]
+%\Section{Вычисление вероятностей поступления сообщений из внешнего источника}
+%Вероятность поступления сообщений из внешнего источника в узел сети \( M_{i} \) для потока \( m \) есть отношение интенсивности поступления сообщений из внешнего источника в узел \( M_{i} \) к суммарной интенсивности внешнего источника.
+%\[ P_{0i}^{m} = \frac{\lambda_{i}^{m}}{\lambda_{0}^{m}}, \: \lambda_{0}^{m} = \sum\limits_{i = 1}^{n} \lambda_{i}^{m} \]
+%
+%\noindent В программной реализации это выглядит следующим образом:
+%\begin{verbatim}
+%InputIntensity[stream] = Lambda[stream].Divide(Lambda0[stream]);
+%\end{verbatim}
+%Где: \\
+%\verb:stream: - переменная, определяющая поток. \\
+%\verb:InputIntensity: - массив векторов, хранящий вероятности поступления сообщений от внешнего источника для каждого потока. \\
+%\verb:Lambda[stream]: - вектор интенсивностей \( \lambda^{m} \). \\
+%\verb:Lambda0[stream]: - суммарная интенсивность внешнего источника. \\
+%\verb:.Divide(): - поэлементное деление вектора на число.
+%
+%\Section{Составление и решение уравнений баланса}
+%Расширенная матрица системы уравнений баланса получается из матрицы маршрутизации следующим способом:
+%\begin{enumerate}
+%    \item Транспонируем матрицу маршрутизации.
+%    \item Вычёркиваем нулевую строчку.
+%    \item Умножаем нулевой столбец на \( -1 \).
+%    \item Переносим нулевой столбец в конец.
+%    \item Проставляем \( -1 \) на главной диагонали.
+%\end{enumerate}
+%
+%Получаем расширенную матрицу для системы уравнений следующего вида и решаем её с помощью матода Гаусса:
+%\[
+% 	\left\{
+%		\begin{aligned}
+%			& -e_{1}^{m} + e_{1}^{m} P_{11}^{m} + \cdots + e_{n}^{m} P_{n1}^{m} = -P_{01}^{m} \\
+%			& \vdots \\
+%			& -e_{n}^{m} + e_{1}^{m} P_{1n}^{m} + \cdots + e_{n}^{m} P_{nn}^{m} = -P_{0n}^{m}
+%		\end{aligned}
+%	\right.
+%\]
+%
+%\begin{figure}
+%    \begin{listing}{1}
+%private Matrix<double> GetExtendedMatrix(int streamIndex)
+%{
+%	var matrix = GetRoutingMatrix(streamIndex);
+%	matrix.Transpose();
+%	matrix.RemoveRow(0);
+%	matrix.AddColumn(matrix.GetColumn(0).Negate());
+%	matrix.RemoveColumn(0);
+%	matrix.ReplaceDiagonalElements(-1);
+%
+%	return matrix;
+%}\end{listing}
+%    
+%    \caption{Функция преобразования мартрицы маршрутизации в расширенную матрицу системы уравнений баланса}
+%    \label{pic:functions_getextendedmatrix}
+%\end{figure}
+%
+%В программной реализации (рис. \ref{pic:functions_getextendedmatrix}) вызывается функция \verb:GetRoutingMatrix:, возвращающая матрицу маршрутизации для заданного потока и преоразует её в соответствии с представленным алгоритмом.
+%\clearpage
+%
+%\Section{Вычисление общих интенсивностей потоков}
+%Вычисления общих интенсивностей потоков \( \lambda_{i}^{'m} \) (\ref{subsection:balanceEquations}) в программной реализации имеет следующий вид:
+%\begin{verbatim}
+%LambdaBar[stream] = E[stream].Multiply(Lambda0[stream]);
+%\end{verbatim}
+%Где: \\
+%\verb:E[stream]: - вектор значений коэффициентов передачи \( e_{i}^{m} \) для потока \( m =  \) \verb:stream:,
+%полученные при решении системы уравнений баланса. \\
+%\verb:Lambda0[stream]: - значениt суммарной интенсивности всех внешних потоков типа \( m =  \) \verb:stream:. \\
+%\verb:.Multiply(): - поэлементное деление вектора на число.
+%
+%\Section{Вычисление коэффициентов загрузки}
+%В соответствии с формулами из \ref{subsection:coefficientOfLoading} коэффициент загрузки вычисляется следующим образом:
+%\begin{verbatim}
+%RoTotal = RoTotal.AddElementWise(RoBar.Last());
+%\end{verbatim}
+%Где: \\
+%\verb:RoBar[stream] = LambdaBar[stream].DivideElementWise(Mu[stream]): - вектор коэффициентов использования \( \rho_{i}^{m}, m =  \) \verb:stream:.
+%
+%\Section{Вычисление стационарных ВВХ}
+%\begin{figure}[h!]
+%	\begin{listing}{1}
+%private void ComputeStationaryPTC()
+%{
+%	for (int i = 0; i < NodesCount; i++)
+%	{
+%		double sum = 0.0;
+%		for (int stream = 0; stream < StreamsCount; stream++)
+%		sum += RoBar[stream][i] / Mu[stream][i];
+%
+%		Ws.AddElement(sum / (1 - RoTotal[i]));
+%	}
+%
+%	for (int stream = 0; stream < StreamsCount; stream++)
+%	{
+%		Us.Add( Ws.AddElementWise(Mu[stream].Pow( -1 )) );
+%		Ls.Add( LambdaBar[stream].MultiplyElementWise( Ws ) );
+%		Ns.Add( LambdaBar[stream].MultiplyElementWise( Us[stream]) );
+%	}
+%}
+%	\end{listing}
+%\end{figure}
+%
+%\Section{Вычисление интегральных ВВХ}
+%
+%
+%\Section{Как использовать программу}
+%Для использования программы
 
-\noindent В программной реализации это выглядит следующим образом:
-\begin{verbatim}
-InputIntensity[stream] = Lambda[stream].Divide(Lambda0[stream]);
-\end{verbatim}
-Где: \\
-\verb:stream: - переменная, определяющая поток. \\
-\verb:InputIntensity: - массив векторов, хранящий вероятности поступления сообщений от внешнего источника для каждого потока. \\
-\verb:Lambda[stream]: - вектор интенсивностей \( \lambda^{m} \). \\
-\verb:Lambda0[stream]: - суммарная интенсивность внешнего источника. \\
-\verb:.Divide(): - поэлементное деление вектора на число.
-
-\Section{Составление и решение уравнений баланса}
-Расширенная матрица системы уравнений баланса получается из матрицы маршрутизации следующим способом:
-\begin{enumerate}
-    \item Транспонируем матрицу маршрутизации.
-    \item Вычёркиваем нулевую строчку.
-    \item Умножаем нулевой столбец на \( -1 \).
-    \item Переносим нулевой столбец в конец.
-    \item Проставляем \( -1 \) на главной диагонали.
-\end{enumerate}
-
-Получаем расширенную матрицу для системы уравнений следующего вида и решаем её с помощью матода Гаусса:
-\[
- 	\left\{
-		\begin{aligned}
-			& -e_{1}^{m} + e_{1}^{m} P_{11}^{m} + \cdots + e_{n}^{m} P_{n1}^{m} = -P_{01}^{m} \\
-			& \vdots \\
-			& -e_{n}^{m} + e_{1}^{m} P_{1n}^{m} + \cdots + e_{n}^{m} P_{nn}^{m} = -P_{0n}^{m}
-		\end{aligned}
-	\right.
-\]
-
-\begin{figure}
-    \begin{listing}{1}
-private Matrix<double> GetExtendedMatrix(int streamIndex)
-{
-	var matrix = GetRoutingMatrix(streamIndex);
-	matrix.Transpose();
-	matrix.RemoveRow(0);
-	matrix.AddColumn(matrix.GetColumn(0).Negate());
-	matrix.RemoveColumn(0);
-	matrix.ReplaceDiagonalElements(-1);
-
-	return matrix;
-}\end{listing}
-    
-    \caption{Функция преобразования мартрицы маршрутизации в расширенную матрицу системы уравнений баланса}
-    \label{pic:functions_getextendedmatrix}
-\end{figure}
-
-В программной реализации (рис. \ref{pic:functions_getextendedmatrix}) вызывается функция \verb:GetRoutingMatrix:, возвращающая матрицу маршрутизации для заданного потока и преоразует её в соответствии с представленным алгоритмом.
-\clearpage
-
-\Section{Вычисление общих интенсивностей потоков}
-Вычисления общих интенсивностей потоков \( \lambda_{i}^{'m} \) (\ref{subsection:balanceEquations}) в программной реализации имеет следующий вид:
-\begin{verbatim}
-LambdaBar[stream] = E[stream].Multiply(Lambda0[stream]);
-\end{verbatim}
-Где: \\
-\verb:E[stream]: - вектор значений коэффициентов передачи \( e_{i}^{m} \) для потока \( m =  \) \verb:stream:,
-полученные при решении системы уравнений баланса. \\
-\verb:Lambda0[stream]: - значениt суммарной интенсивности всех внешних потоков типа \( m =  \) \verb:stream:. \\
-\verb:.Multiply(): - поэлементное деление вектора на число.
-
-\Section{Вычисление коэффициентов загрузки}
-В соответствии с формулами из \ref{subsection:coefficientOfLoading} коэффициент загрузки вычисляется следующим образом:
-\begin{verbatim}
-RoTotal = RoTotal.AddElementWise(RoBar.Last());
-\end{verbatim}
-Где: \\
-\verb:RoBar[stream] = LambdaBar[stream].DivideElementWise(Mu[stream]): - вектор коэффициентов использования \( \rho_{i}^{m}, m =  \) \verb:stream:.
-
-\Section{Вычисление стационарных ВВХ}
-\begin{figure}[h!]
-	\begin{listing}{1}
-private void ComputeStationaryPTC()
-{
-	for (int i = 0; i < NodesCount; i++)
-	{
-		double sum = 0.0;
-		for (int stream = 0; stream < StreamsCount; stream++)
-		sum += RoBar[stream][i] / Mu[stream][i];
-
-		Ws.AddElement(sum / (1 - RoTotal[i]));
-	}
-
-	for (int stream = 0; stream < StreamsCount; stream++)
-	{
-		Us.Add( Ws.AddElementWise(Mu[stream].Pow( -1 )) );
-		Ls.Add( LambdaBar[stream].MultiplyElementWise( Ws ) );
-		Ns.Add( LambdaBar[stream].MultiplyElementWise( Us[stream]) );
-	}
-}
-	\end{listing}
-\end{figure}
-
-\Section{Вычисление интегральных ВВХ}
-
-
-\Section{Как использовать программу}
-
-
-\Chapter{<Модельный эксперимент>}
+\Chapter{Модельный эксперимент}
 
 \chapter*{\centering Заключение}
 \addcontentsline{toc}{chapter}{Заключение}
@@ -713,8 +889,6 @@ private void ComputeStationaryPTC()
 \begin{appendices}
     \chapter{Структура XML файла для описания модели ИВС}
     \label{appendix:xml}
-    
-    \chapter{Блок-схема алгоритма программы}
 \end{appendices}
 
 \renewcommand{\bibname}{\centering Список литературы}
