@@ -14,9 +14,10 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows,
 	decorations.pathreplacing,decorations.pathmorphing}
-
-% landscape orientation
-\usepackage{lscape}
+	
+% for tables
+\usepackage{multirow}
+\usepackage{hhline}
 
 % красная строка для всех абзацев
 \usepackage{indentfirst}
@@ -89,7 +90,6 @@
 
 \renewcommand{\contentsname}{\centering Оглавление}
 \tableofcontents
-%\enlargethispage{\baselineskip}
 \thispagestyle{empty}
 
 \chapter*{\centering Введение}
@@ -541,8 +541,11 @@ i = \overline{1, n} \]
 где \( n \) - количество узлов в маршруте.
 
 \Section{Определение интенсивностей обслуживающих приборов, работающих на основе технологий семейства Ethernet}
-\label{section:ehernet}
-Стандарт Ethernet определяет длину служебных полей кадра и преамбулу по 18 и 8 байт соответственно. От сюда следует что длина кадра в битах равна \( 8 * (X + 26), X \) - длина поля данных.
+\label{section:ethernet}
+Для определения интенсивности обслуживания \( \mu \), которая характеризует максимальное количество кадров в секунду, обрабатываемых обслуживающим прибором, рассмотрим кадр формата Ethernet Version 2, т.к. он наиболее распространён.
+
+Стандарт Ethernet определяет длину служебных полей кадра и преамбулу по 18 и 8 байт соответственно. От сюда следует что длина кадра в битах равна \( 8 * (X + 26), \: X \) - длина поля данных. Поле данных может иметь длину от 46 до 1500 байт. Таким образом минимальная длина кадра равна \( 46 + 26 = 72 \) байта, а максимальная 1526 байт.
+
 Время передачи битов кадра определяется битовыми интервалами \( bt = \frac{1}{S}, \: S \) - битовая скорость.
 Для передачи кадра длиной \( X \) потребуется время равное \( 8 * (X + 26) * bt \). Прибавив межкадровый интервал \( IFG = 96 * bt \) получим
 период следования кадров с длиной поля данных \( X \).
@@ -551,8 +554,163 @@ i = \overline{1, n} \]
 Итенсивность обслуживания \( \mu \), которая характеризует максимальное количество кадров в секунду, обрабатываемых обслуживающим прибором, есть величина обратно пропорциональная периоду \( T \).
 \[ \mu = \frac{1}{T} = \frac{1}{ 8 * (X + 26) * bt + IFG } \]
 
-\Chapter{Программная реализация}
+Проведя не сложные расчёты можно получить интенсивности обслуживания для пакетов различной длины с учётом выбранной технологии передачи данных (табл. \ref{table:mu}).
 
+\begin{table}[h!]
+	\begin{tabular}{|p{0.22\textwidth}|p{0.22\textwidth}|p{0.22\textwidth}|p{0.22\textwidth}|}
+	\hline Технология Ethernet & Битовая скорость & Длина кадра (байт) & Интенсивность \( \mu \) (кадр/мс) \\
+	\hline \multirow{2}{*}{Fast Ethernet} 	& \multirow{2}{*}{100 Мбит/с} 	& 72 	& 148.800 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 8.127 \\ 
+	
+	\hline \multirow{2}{*}{Gigabit Ethernet} 	& \multirow{2}{*}{1 Гбит/с} 		& 72 	& 1488.095 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 81.274 \\ 
+	
+	\hline \multirow{2}{*}{10G Ethernet} 		& \multirow{2}{*}{10 Гбит/с} 	& 72 	& 14880.952 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 812.744 \\ 
+	
+	\hline \multirow{2}{*}{40G Ethernet} 		& \multirow{2}{*}{40 Гбит/с} 	& 72 	& 59523.800 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 3250.975 \\ 
+	
+	\hline \multirow{2}{*}{100G Ethernet} 	& \multirow{2}{*}{100 Гбит/с} 	& 72 	& 148809.524 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 8127.438 \\
+	\hline
+	\end{tabular}
+
+	\caption{Интенсивности обслуживания для пакетов различной длины с учётом выбранной технологии передачи данных}
+	\label{table:mu}
+\end{table}
+
+\Section{Структурная надёжность сетей}
+Надёжность какого-либо объектана -- свойство, заключающееся в способности выполнять поставленные задачи в определённых условиях эксплуатации.
+Состояние объекта, при котором он способен выполнять заданные функции, сохраняя значения основных параметров в пределах, установленных нормативно-технической документацией, называют работоспособностью, а состояние, в котором объект удовлетворяет указанным требованиям, -- его исправностью.
+Событие, заключающееся в нарушении работоспособности объекта, называют отказом.
+
+Для информационых сетей, являющихся сложными системами, состоящими из элементов разнородных по своим свойствам, показателям надёжности, назначению, дате изготовления, сроку ввода в эксплуатацию и т.п., выделяют два основных аспекта надёжности:
+\begin{enumerate}
+	\item Аппаратурный. Под ним понимают проблему надёжности отдельных элементов, входящих в узлы и линии сети.
+	\item Структурный. Связан с возможностью существования в сети путей доставки информации.
+\end{enumerate}
+
+В данной работе рассматривается структурная надёжность, определяемая количеством резервных маршрутов между двумя произвольными вершинами сети.
+Более строгие модели надёжности сетей будут рассмотрены в магистерской диссертации.
+
+\Chapter{Программная реализация}
+\Section{Постановка задачи}
+Программа должна удовлетворять следующим требованиям:
+\begin{enumerate}
+    \item Вычислять стационарные и интегральные ВВХ для заданной пользователем модели ИВС.
+    \item Проверять корректность введённой пользователем модели ИВС.
+    \item При невозможности вычисления каких-либо характеристик сообщать об этом пользователю.
+\end{enumerate}
+
+Программа будет выполнена в виде консольного приложения, т.к. этого достаточно для поставленной задачи и позволяет сконцентрироваться на реализации и достижении поставленных требований. Также это позволит программе без проблем запускаться на различных операционны системах.
+
+\Section{Программная платформа}
+Выбрана программная платформа Mono --- кроссплатформенная реализация Microsoft .Net Framework с открытым исходным кодом.
+Mono поддерживает Windows, Linux, BSD, Mac OS X и другие операционные системы и множетсво процессорных платформ, что
+позволяет писать переносимые приложения на C\#.
+Среда разработки --- MonoDevelop.
+
+\Section{Описание модели ИВС}
+Модель ИВС одонозначно задаётся интенсивностями обслуживания \( \mu_{i}^{m} \), интенсивностями поступления сообщений
+\( \lambda_{i}^{m} \) и маршрутной матрицей \( P^{m} \) для каждого входного потока \( m = \overline{1, F} \)
+(см. \ref{section:mathmodel}). Таким образом надо решить как пользователь будет передавать программе описание модели ИВС.
+
+Для этой цели используется XML файл, в котором задаются параметры модели. XML имеет простой синтаксис, удобный как для составления и чтения файлов человеком, так и для машинной обработки и генерации.
+
+\begin{figure}[h!]
+    \begin{listing}{1}
+<NetworkConfiguration Name="Linear topology">
+    <RoutingMatrix>
+        <Row>0; -;  -;  -;  -</Row>
+        <Row>0.25;  0;  0.75;   0;  0</Row>
+        <Row>0.25;  0.375;  0;  0.375;  0</Row>
+        <Row>0.25;  0;  0.375;  0;  0.375</Row>
+        <Row>0.25;  0;  0;  0.75;   0</Row>
+    </RoutingMatrix>
+        
+    <Nodes Count="4">
+        <Lambda>17; 14; 13; 16</Lambda>
+		        
+        <Mu>
+            <Ethernet Type="Gigabit" FrameLength="Max"/>
+        </Mu>
+    </Nodes>
+</NetworkConfiguration>\end{listing}
+    
+    \caption{Описание ИВС линейной топологии из 4-х узлов и одним потоком}
+    \label{pic:xml}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\begin{picture}(200, 40)(-10, -10)
+			\put(0, 0){\circle{30}}
+			\put(-10, -3){ \( \mu_{1} \) }
+			
+			\put(-30, 45){\vector(1, -1){29}}	
+			\put(-1, 16){\vector(-1, 1){29}}
+			\put(-15, 30){ \( \lambda_{1} \)}			
+			\put(16, 0){\vector(1, 0){28}}
+			\put(44, 0){\vector(-1, 0){28}}
+				
+			\put(60, 0){\circle{30}}
+			\put(50, -3){ \( \mu_{2} \) }
+			
+			\put(30, 45){\vector(1, -1){29}}
+			\put(59, 16){\vector(-1, 1){29}}
+			\put(45, 30){ \( \lambda_{2} \) }
+			\put(76, 0){\vector(1, 0){28}}
+			\put(104, 0){\vector(-1, 0){28}}
+				
+			\put(120, 0){\circle{30}}
+			\put(110, -3){ \( \mu_{3} \) }
+			
+			\put(90, 45){\vector(1, -1){29}}
+			\put(119, 16){\vector(-1, 1){29}}
+			\put(105, 30){ \( \lambda_{3} \) }
+			\put(136, 0){\vector(1, 0){28}}
+			\put(164, 0){\vector(-1, 0){28}}
+				
+			\put(180, 0){\circle{30}}
+			\put(170, -3){ \( \mu_{4} \) }
+			
+			\put(150, 45){\vector(1, -1){29}}
+			\put(179, 16){\vector(-1, 1){29}}
+			\put(165, 30){ \( \lambda_{4} \) }
+		\end{picture}
+	\end{center}
+
+	\caption{Сеть из 4-х узлов с линейной топологией}
+	\label{pic:linear_demo}
+\end{figure}
+
+На рис. \ref{pic:xml} показан XML файл, задайющий модель ИВС, состоящей из 4-х узлов с линейной топологией и единственным потоком (рис. \ref{pic:linear_demo}).
+
+Интенсивность обслуживания \( \mu \) задаётся для пакетов максимальной длины технологии Gigabit Ethernet (см. \ref{section:ethernet}), интенсивность поступления сообщений \( \lambda \) задаётся в явном виде для каждого узла сети (пакеты/мс).
+\[ \mu = (81.274, 81.274, 81.274, 81.274), \: \lambda = (17, 14, 13, 16) \]
+
+Со 2-й по 8-ю строки задаётся маршрутная матрица.
+\[ P = \left(\begin{matrix}
+                0 & - & - & - & - \\
+                0.25 & 0 & 0.75 & 0 & 0 \\
+                0.25 & 0.375 & 0 & 0.375 & 0 \\
+                0.25 & 0 & 0.375 & 0 & 0.375 \\
+                0.25 & 0 & 0 & 0.75 & 0 \\
+            \end{matrix}\right) \]
+Прочерки в строках задаваемой матрицы указывают программе, что надо вычислить соответствующие вероятности. В данном случае
+будут вычисляться вероятности поступления сообщений из внешнего источника.
+
+За более подробной информацией о структуре файла обращайтесь к Приложению \ref{appendix:xml}.
+            
+Парсинг (разбор) XML файла осуществляется с помощью стандартных средств языка C\# из пространств имён System.Xml и System.Xml.Linq.
+
+\Section{Аргументы командной строки}
+При запуске программе передаются несколько обязательных аргументов и один опциональный. Обязательные аргументы \verb:netconfig:, \verb:startnode: и \verb:targetnode: задают путь к конфигурационному файлу, начальный и конечный узлы (для вычисления интегральных ВВХ) соответственно.
+
+Необязательный аргумент \verb:log: обозначает необходмость создать лог, в который будет выведена вся информация, если вычисления закончились успешно.
+
+\Section{Алгоритм работы программы}
 % -------------------------------------------- flowcharts --------------------------------------------
 % Define block styles
 \tikzstyle{decision} = [diamond, draw, fill=white, 
@@ -565,7 +723,7 @@ i = \overline{1, n} \]
 \tikzstyle{cloud} = [draw, ellipse,fill=white, node distance=3cm,
     minimum height=2em]
     
-\begin{figure}
+\begin{figure}[h!]
 	\centering
 	\begin{tikzpicture}[node distance = 2cm, auto]
 	    % nodes
@@ -650,6 +808,31 @@ i = \overline{1, n} \]
 	\centering
 	\begin{tikzpicture}[node distance = 2cm, auto]
 		% nodes
+		\node [rec_block] (find_paths) { поиск самого короткого и самого длинного путей в сети };
+		\node [decision, below of=find_paths, node distance=3cm] (equals) { они равны? };
+		\node [sqr_block, left of=equals, node distance=5.5cm] (yes) { остаётся любой из путей };
+		\node [sqr_block, right of=equals, node distance=5.5cm] (no) { остаются оба пути };
+		\node [rec_block, below of=equals, node distance=3.5cm] (compute_density) { вычисление плотностей распределения сообщений в маршрутах };
+		\node [rec_block, below of=compute_density, node distance=2.5cm] (create_plot) { создание графика };
+		\node [rec_block, below of=create_plot] (show_plot) { вывод графика на экран };
+		% edges
+		\path [line] (find_paths) -- (equals);
+   		\path [line] (equals) -- node [near start] {да} (yes);
+   		\path [line] (equals) -- node [near start] {нет} (no);
+   		\path [line] (yes) |- (compute_density);
+  		\path [line] (no) |- (compute_density);  		
+  		\path [line] (compute_density) -- (create_plot);
+		\path [line] (create_plot) -- (show_plot);
+	\end{tikzpicture}
+	
+	\caption{Построение графиков плотностей}
+	\label{pic:flowchart_graphs}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[node distance = 2cm, auto]
+		% nodes
 		\node [decision] (paths) { начальный и конечный узлы равны? };
 		\node [rec_block, right of=paths, node distance=5.5cm] (error) { выброс исключения };
 		\node [rec_block, below of=paths, node distance=3.5cm] (exclude_loops) { удаляем связи начальной вершины со всеми остальными } ;
@@ -681,158 +864,252 @@ i = \overline{1, n} \]
 	\caption{Поиск всех путей между двумя узлами сети (одна итерация)}
 	\label{pic:flowchart_paths}
 \end{figure}
-
-\begin{figure}
-	\centering
-	\begin{tikzpicture}[node distance = 2cm, auto]
-		% nodes
-		\node [rec_block] (find_paths) { поиск самого короткого и самого длинного путей в сети };
-		\node [decision, below of=find_paths, node distance=3cm] (equals) { они равны? };
-		\node [sqr_block, left of=equals, node distance=5.5cm] (yes) { остаётся любой из путей };
-		\node [sqr_block, right of=equals, node distance=5.5cm] (no) { остаются оба пути };
-		\node [rec_block, below of=equals, node distance=3.5cm] (compute_density) { вычисление плотностей распределения сообщений в маршрутах };
-		\node [rec_block, below of=compute_density, node distance=2.5cm] (create_plot) { создание графика };
-		\node [rec_block, below of=create_plot] (show_plot) { вывод графика на экран };
-		% edges
-		\path [line] (find_paths) -- (equals);
-   		\path [line] (equals) -- node [near start] {да} (yes);
-   		\path [line] (equals) -- node [near start] {нет} (no);
-   		\path [line] (yes) |- (compute_density);
-  		\path [line] (no) |- (compute_density);  		
-  		\path [line] (compute_density) -- (create_plot);
-		\path [line] (create_plot) -- (show_plot);
-	\end{tikzpicture}
-	
-	\caption{Построение графиков плотностей}
-	\label{pic:flowchart_graphs}
-\end{figure}
 % ----------------------------------------------------------------------------------------------------
 
-\Section{Постановка задачи}
-Программа должна удовлетворять следующим требованиям:
-\begin{enumerate}
-    \item Вычислять стационарные и интегральные ВВХ для заданной пользователем модели ИВС.
-    \item Проверять корректность введённой пользователем модели ИВС.
-    \item При невозможности вычисления каких-либо характеристик сообщать об этом пользователю.
-\end{enumerate}
+\Section{Основные моменты реализации}
 
-Программа будет выполнена в виде консольного приложения, т.к. этого достаточно для поставленной задачи и позволяет сконцентрироваться на реализации и достижении поставленных требований. Также это позволит программе без проблем запускаться на различных операционны системах.
+% ------------------------------------ code ------------------------------------
+\begin{figure}[h!]
+    \begin{listing}{1}
+void ComputeParameters()
+{
+  // вычисление суммарной интенсивности внешних потоков
+  Lambda.ForEach(
+	lambdas => Lambda0.AddElement(lambdas.Sum())); 
+  RoTotal = new Vector<double>(NodesCount);
 
-\Section{Программная платформа}
-Выбрана программная платформа Mono --- кроссплатформенная реализация Microsoft .Net Framework с открытым исходным кодом.
-Mono поддерживает Windows, Linux, BSD, Mac OS X и другие операционные системы и множетсво процессорных платформ, что
-позволяет писать переносимые приложения на C\#.
-Среда разработки --- MonoDevelop.
+  for (int stream = 0; stream < StreamsCount; stream++)
+  {
+	// вычисление входных вероятностей
+	InputIntensity.Add(Lambda[stream].Clone()
+	  .InsertElement(0, 0).Divide(Lambda0[stream]));
+	// вычисление коэфициентов передачи
+	E.Add(
+	  GaussMethod.Solve(GetExtendedMatrix(stream)));
+	// вычисление общих интенсивностей потоков
+	LambdaBar.Add(
+	  E[stream].Multiply(Lambda0[stream]));
+	// вычисление коэффициентов использования узлов
+	RoBar.Add(
+	  LambdaBar[stream].DivideElementWise(Mu[stream]));
+	RoTotal = RoTotal.AddElementWise(RoBar.Last());
+	
+  	if(RoBar[stream].Any(roBar => roBar > 1))
+	  throw new ArgumentOutOfRangeException(
+	  string.Format("RoBar, stream {0}", stream),
+	  "Some Ro' is greater than zero.");
+  }
+  if (RoTotal.Any(roTotal => roTotal > 1))
+	throw new ArgumentOutOfRangeException("RoTotal",
+	"Some RoTotal is greater than zero.");
 
-\Section{Описание модели ИВС}
-Модель ИВС одонозначно задаётся интенсивностями обслуживания \( \mu_{i}^{m} \), интенсивностями поступления сообщений
-\( \lambda_{i}^{m} \) и маршрутной матрицей \( P^{m} \) для каждого входного потока \( m = \overline{1, F} \)
-(см. \ref{section:mathmodel}). Таким образом надо решить как пользователь будет передавать программе описание модели ИВС.
-
-Для этой цели используется XML файл, в котором задаются параметры модели. XML имеет простой синтаксис, удобный как для составления и чтения файлов человеком, так и для машинной обработки и генерации.
+  AllPaths =
+	GraphHelper.GetAllPaths(
+	RoutingMatrix.Clone().RemoveColumn(0))
+	.OrderBy(path => path.Length).ToList();
+	Paths = AllPaths.Where(
+	path => path.First() == StartNode &&
+	path.Last() == TargetNode).ToList();
+}\end{listing}
+	
+	\caption{Функция расчёта параметров модели}
+	\label{pic:function_computeParameters}
+\end{figure}
 
 \begin{figure}[h!]
     \begin{listing}{1}
-<NetworkConfiguration Name="Linear topology">
-    <RoutingMatrix>
-        <Row>0; -;  -;  -;  -</Row>
-        <Row>0.25;  0;  0.75;   0;  0</Row>
-        <Row>0.25;  0.375;  0;  0.375;  0</Row>
-        <Row>0.25;  0;  0.375;  0;  0.375</Row>
-        <Row>0.25;  0;  0;  0.75;   0</Row>
-    </RoutingMatrix>
-        
-    <Nodes Count="4">
-        <Lambda>17; 14; 13; 16</Lambda>
-		        
-        <Mu>
-            <Ethernet Type="Gigabit" FrameLength="Max"/>
-        </Mu>
-    </Nodes>
-</NetworkConfiguration>\end{listing}
+Matrix<double> GetExtendedMatrix(int streamIndex)
+{
+  var matrix = GetRoutingMatrix(streamIndex);
+  matrix.Transpose();
+  matrix.RemoveRow(0);
+  matrix.AddColumn(matrix.GetColumn(0).Negate());
+  matrix.RemoveColumn(0);
+  matrix.ReplaceDiagonalElements(-1);
+
+  return matrix;
+}\end{listing}
     
-    \caption{Описание ИВС линейной топологии из 4-х узлов и одним потоком}
-    \label{pic:xml}
+    \caption{Функция преобразования мартрицы маршрутизации в расширенную матрицу системы уравнений баланса}
+    \label{pic:functions_getextendedmatrix}
 \end{figure}
 
-На рис. \ref{pic:xml} показан XML файл, задайющий модель ИВС, состоящей из 4-х узлов с линейной топологией и единственным потоком.
+\begin{figure}[h!]
+	\begin{listing}{1}
+void ComputeStationaryPTC()
+{
+  for (int i = 0; i < NodesCount; i++)
+  {
+	double sum = 0.0;
+	for (int stream = 0; stream < StreamsCount; stream++)
+	sum += RoBar[stream][i] / Mu[stream][i];
 
-Интенсивность обслуживания \( \mu \) задаётся для пакетов максимальной длины технологии Gigabit Ethernet (пакеты/мс), интенсивность поступления сообщений \( \lambda \) задаётся в явном виде для каждого узла сети (пакеты/мс).
-\[ \mu = (81.3, 81.3, 81.3, 81.3), \: \lambda = (17, 14, 13, 16) \]
+	Ws.AddElement(sum / (1 - RoTotal[i]));
+  }
 
-Со 2-й по 8-ю строки задаётся маршрутная матрица.
-\[ P = \left(\begin{matrix}
-                0 & - & - & - & - \\
-                0.25 & 0 & 0.75 & 0 & 0 \\
-                0.25 & 0.375 & 0 & 0.375 & 0 \\
-                0.25 & 0 & 0.375 & 0 & 0.375 \\
-                0.25 & 0 & 0 & 0.75 & 0 \\
-            \end{matrix}\right) \]
-Прочерки в строках задаваемой матрицы указывают программе, что надо вычислить соответствующие вероятности. В данном случае
-будут вычисляться вероятности поступления сообщений из внешнего источника.
+  for (int stream = 0; stream < StreamsCount; stream++)
+  {
+	Us.Add( Ws.AddElementWise(Mu[stream].Pow(-1)) );
+	Ls.Add(
+	  LambdaBar[stream].MultiplyElementWise(Ws) );
+	Ns.Add(
+	  LambdaBar[stream].MultiplyElementWise(Us[stream]));
+  }
+}\end{listing}
 
-За более подробной информацией о структуре файла обращайтесь к Приложению \ref{appendix:xml}.
-            
-Разбор XML файла осуществляется с помощью стандартных средств языка C\# из пространств имён System.Xml и System.Xml.Linq.
-            
-%\Section{Вычисление вероятностей поступления сообщений из внешнего источника}
-%Вероятность поступления сообщений из внешнего источника в узел сети \( M_{i} \) для потока \( m \) есть отношение интенсивности поступления сообщений из внешнего источника в узел \( M_{i} \) к суммарной интенсивности внешнего источника.
-%\[ P_{0i}^{m} = \frac{\lambda_{i}^{m}}{\lambda_{0}^{m}}, \: \lambda_{0}^{m} = \sum\limits_{i = 1}^{n} \lambda_{i}^{m} \]
-%
-%\noindent В программной реализации это выглядит следующим образом:
-%\begin{verbatim}
-%InputIntensity[stream] = Lambda[stream].Divide(Lambda0[stream]);
-%\end{verbatim}
-%Где: \\
-%\verb:stream: - переменная, определяющая поток. \\
-%\verb:InputIntensity: - массив векторов, хранящий вероятности поступления сообщений от внешнего источника для каждого потока. \\
-%\verb:Lambda[stream]: - вектор интенсивностей \( \lambda^{m} \). \\
-%\verb:Lambda0[stream]: - суммарная интенсивность внешнего источника. \\
-%\verb:.Divide(): - поэлементное деление вектора на число.
-%
-%\Section{Составление и решение уравнений баланса}
-%Расширенная матрица системы уравнений баланса получается из матрицы маршрутизации следующим способом:
-%\begin{enumerate}
-%    \item Транспонируем матрицу маршрутизации.
-%    \item Вычёркиваем нулевую строчку.
-%    \item Умножаем нулевой столбец на \( -1 \).
-%    \item Переносим нулевой столбец в конец.
-%    \item Проставляем \( -1 \) на главной диагонали.
-%\end{enumerate}
-%
-%Получаем расширенную матрицу для системы уравнений следующего вида и решаем её с помощью матода Гаусса:
-%\[
-% 	\left\{
-%		\begin{aligned}
-%			& -e_{1}^{m} + e_{1}^{m} P_{11}^{m} + \cdots + e_{n}^{m} P_{n1}^{m} = -P_{01}^{m} \\
-%			& \vdots \\
-%			& -e_{n}^{m} + e_{1}^{m} P_{1n}^{m} + \cdots + e_{n}^{m} P_{nn}^{m} = -P_{0n}^{m}
-%		\end{aligned}
-%	\right.
-%\]
-%
-%\begin{figure}
-%    \begin{listing}{1}
-%private Matrix<double> GetExtendedMatrix(int streamIndex)
-%{
-%	var matrix = GetRoutingMatrix(streamIndex);
-%	matrix.Transpose();
-%	matrix.RemoveRow(0);
-%	matrix.AddColumn(matrix.GetColumn(0).Negate());
-%	matrix.RemoveColumn(0);
-%	matrix.ReplaceDiagonalElements(-1);
-%
-%	return matrix;
-%}\end{listing}
-%    
-%    \caption{Функция преобразования мартрицы маршрутизации в расширенную матрицу системы уравнений баланса}
-%    \label{pic:functions_getextendedmatrix}
-%\end{figure}
-%
-%В программной реализации (рис. \ref{pic:functions_getextendedmatrix}) вызывается функция \verb:GetRoutingMatrix:, возвращающая матрицу маршрутизации для заданного потока и преоразует её в соответствии с представленным алгоритмом.
+	\caption{Функция вычисления стационарных ВВХ}
+	\label{pic:function_computeSPTC}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{listing}{1}
+void ComputeIntegratedPTC()
+{
+  ComputeTransitionProbabilities();
+
+  Wi = ComputeIntegralChar(Ws);
+  for (int stream = 0; stream < StreamsCount; stream++)
+  {
+	Ui.Add(ComputeIntegralChar(Us[stream]));
+	Li.Add(ComputeIntegralChar(Ls[stream]));
+	Ni.Add(ComputeIntegralChar(Ns[stream]));
+  }
+}\end{listing}
+
+	\caption{Функция вычисления интегральных ВВХ}
+	\label{pic:function_computeIPTC}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{listing}{1}
+double ComputeIntegralChar(Vector<double> staticChar)
+{
+  var integralChar =
+	staticChar[StartNode] + staticChar[TargetNode];
+
+  for (int i = 0; i < Paths.Count(); i++)
+  {
+	var temp = 0.0;
+	for (int j=1; j < Paths.ElementAt(i).Count()-1; j++)
+	  temp += staticChar[j];
+
+	integralChar += TransitionProbabilities[i] * temp;
+  }
+
+  return integralChar;
+}\end{listing}
+
+	\caption{}
+	\label{pic:function_computeIntegralChar}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{listing}{1}
+void ComputeTransitionProbabilities()
+  {
+	var matrix = RoutingMatrix.Clone().RemoveColumn(0);
+
+	var pathsProbabilities = 
+	Paths.Select(
+	path => path.Where(
+	(item, index) => index < path.Length - 1)
+	.Select((item, index) => new {item, index})
+	.Aggregate(1.0, (accumulate, anon) => accumulate *=
+	matrix[anon.item, path[anon.index + 1]]));
+
+	var s = pathsProbabilities.Sum();
+
+	TransitionProbabilities = pathsProbabilities
+	.Select(prob => prob / s).ToList();
+}\end{listing}
+
+	\caption{Функция вычисления вероятностей выбора маршрутов}
+	\label{pic:function_computeTransitionProbabilities}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{listing}{1}
+List<Vector<int>> GetPathsBetween(
+  Matrix<double> matrix, int startNode, int targetNode)
+{
+  if (startNode == targetNode)
+  throw new ArgumentException(
+  "stratNode and targetNode must be different.");
+
+  var paths = new List<Vector<int>>();
+
+  // exclude routing loops
+  matrix.ForEachRow(row => row[startNode] = 0);
+
+  for (int intermediateNode = 0;
+  intermediateNode < matrix.RowsCount; intermediateNode++)
+  {
+	if (matrix[startNode, intermediateNode] <= 0)
+	  continue;
+
+	if (intermediateNode == targetNode)
+	  paths.Add(
+	  new Vector<int>(new[] { startNode, targetNode }));
+	else
+	{
+	  List<Vector<int>> localPaths = GetPathsBetween(
+	  matrix.Clone(), intermediateNode, targetNode);
+	  if (localPaths.Any())
+		localPaths.ForEach(path =>
+	  	{
+		  path.InsertElement(0, startNode);
+		  paths.Add(path);
+	  	});
+	  }
+    }
+
+  return paths;
+}\end{listing}
+
+	\caption{Функция поиска всех путей между двумя вершинами}
+	\label{pic:function_getPathsBetween}
+\end{figure}
+% ------------------------------------------------------------------------------
+
+\Subsection{Функция расчёта параметров модели}
+Функция \verb:ComputeParameters(): (рис. \ref{pic:function_computeParameters}) основная функция, которая после парсинга конфигурационного файла высчитывает следующие параметры:
+\begin{itemize}
+	\item[-] суммарная интенсивность внешних потоков \( \lambda_{0}^{m} \) (рис. \ref{pic:function_computeParameters}, строка 4)	
+	\item[-] вероятности поступления сообщений из внешнего источника \( P_{0,j}^{m} \) \\ (рис. \ref{pic:function_computeParameters}, строка 11)
+	\item[-] коэффициенты передачи \( e_{i}^{m} \) (рис. \ref{pic:function_computeParameters}, строка 14)
+	\item[-] общие интенсивности потоков \( \lambda_{i}^{'m} \) (рис. \ref{pic:function_computeParameters}, строка 17)
+	\item[-] коэффициенты использования узлов \( \rho_{i}^{m} \) и коэффициенты загрузки \( \rho_{i} \) (рис. \ref{pic:function_computeParameters}, строка 20)
+	\item[-] все пути в сети (рис. \ref{pic:function_computeParameters}, строка 33)
+\end{itemize}
+Эти параметры дают достаточно инормации для дальнейших вычислений стационарных и интергральных ВВХ и плотностей распределения сообщений в маршрутах.
+
+\Subsection{Составление и решение уравнений баланса}
+Расширенная матрица системы уравнений баланса получается из матрицы маршрутизации следующим способом:
+\enlargethispage{\baselineskip}
+\begin{enumerate}
+    \item Транспонируем матрицу маршрутизации.
+    \item Вычёркиваем нулевую строчку.
+    \item Умножаем нулевой столбец на \( -1 \).
+    \item Переносим нулевой столбец в конец.
+    \item Проставляем \( -1 \) на главной диагонали.
+\end{enumerate}
+
+Получаем расширенную матрицу для системы уравнений следующего вида и решаем её с помощью матода Гаусса:
+\[
+ 	\left\{
+		\begin{aligned}
+			& -e_{1}^{m} + e_{1}^{m} P_{11}^{m} + \cdots + e_{n}^{m} P_{n1}^{m} = -P_{01}^{m} \\
+			& \vdots \\
+			& -e_{n}^{m} + e_{1}^{m} P_{1n}^{m} + \cdots + e_{n}^{m} P_{nn}^{m} = -P_{0n}^{m}
+		\end{aligned}
+	\right.
+\]
+
+В программной реализации (рис. \ref{pic:function_computeParameters}, строка 15) вызывается функция \verb:GetExtendedMatrix(int streamIndex):
+(рис. \ref{pic:functions_getextendedmatrix}), которая преобразует \\ матрицу маршрутизации заданного потока.
 %\clearpage
-%
-%\Section{Вычисление общих интенсивностей потоков}
+
+%\Subsection{Вычисление общих интенсивностей потоков}
 %Вычисления общих интенсивностей потоков \( \lambda_{i}^{'m} \) (\ref{subsection:balanceEquations}) в программной реализации имеет следующий вид:
 %\begin{verbatim}
 %LambdaBar[stream] = E[stream].Multiply(Lambda0[stream]);
@@ -843,43 +1120,17 @@ Mono поддерживает Windows, Linux, BSD, Mac OS X и другие оп
 %\verb:Lambda0[stream]: - значениt суммарной интенсивности всех внешних потоков типа \( m =  \) \verb:stream:. \\
 %\verb:.Multiply(): - поэлементное деление вектора на число.
 %
-%\Section{Вычисление коэффициентов загрузки}
+%\Subsection{Вычисление коэффициентов загрузки}
 %В соответствии с формулами из \ref{subsection:coefficientOfLoading} коэффициент загрузки вычисляется следующим образом:
 %\begin{verbatim}
 %RoTotal = RoTotal.AddElementWise(RoBar.Last());
 %\end{verbatim}
 %Где: \\
 %\verb:RoBar[stream] = LambdaBar[stream].DivideElementWise(Mu[stream]): - вектор коэффициентов использования \( \rho_{i}^{m}, m =  \) \verb:stream:.
-%
-%\Section{Вычисление стационарных ВВХ}
-%\begin{figure}[h!]
-%	\begin{listing}{1}
-%private void ComputeStationaryPTC()
-%{
-%	for (int i = 0; i < NodesCount; i++)
-%	{
-%		double sum = 0.0;
-%		for (int stream = 0; stream < StreamsCount; stream++)
-%		sum += RoBar[stream][i] / Mu[stream][i];
-%
-%		Ws.AddElement(sum / (1 - RoTotal[i]));
-%	}
-%
-%	for (int stream = 0; stream < StreamsCount; stream++)
-%	{
-%		Us.Add( Ws.AddElementWise(Mu[stream].Pow( -1 )) );
-%		Ls.Add( LambdaBar[stream].MultiplyElementWise( Ws ) );
-%		Ns.Add( LambdaBar[stream].MultiplyElementWise( Us[stream]) );
-%	}
-%}
-%	\end{listing}
-%\end{figure}
-%
-%\Section{Вычисление интегральных ВВХ}
-%
-%
-%\Section{Как использовать программу}
-%Для использования программы
+
+\Subsection{Вычисление стационарных ВВХ}
+
+\Subsection{Вычисление интегральных ВВХ}
 
 \Chapter{Модельный эксперимент}
 
