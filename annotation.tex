@@ -1,0 +1,115 @@
+%TODO: в конечной версии draft заменить final
+\documentclass[oneside, final, 14pt, a4paper]{extreport}
+\renewcommand{\rmdefault}{ftm} % Times New Roman
+
+\usepackage[utf8]{inputenc}
+\usepackage[russianb]{babel}
+%\usepackage{amssymb}
+%\usepackage{amsmath}
+%\usepackage[labelsep = period]{caption}
+%\usepackage{moreverb}
+
+% flowcharts
+%\usepackage{tikz}
+%\usetikzlibrary{shapes,arrows,
+%	decorations.pathreplacing,decorations.pathmorphing}
+	
+% for tables
+%\usepackage{multirow}
+%\usepackage{hhline}
+
+% include pictures
+%\usepackage{graphicx}
+%\DeclareGraphicsExtensions{.png}
+%\graphicspath{ {pics/} }
+
+% красная строка для всех абзацев
+\usepackage{indentfirst}
+
+% отступы
+\usepackage{vmargin}
+\setmarginsrb{3cm}{2cm}{1.5cm}{2cm}{0pt}{0pt}{0pt}{1.3cm}
+
+% полуторный интервал только для текста
+\usepackage{setspace}
+\onehalfspacing
+
+% --------------------- определение команд рубрикации ---------------------
+%\newcommand\Chapter[1]
+%{
+%	\refstepcounter{chapter}
+%	\chapter*
+%	{
+%		\begin{huge}		
+%			\textbf
+%			{
+%				\raggedright \centering
+%				\chaptername\ \arabic{chapter}. #1\\
+%			}
+%		\end{huge}
+%		\bigskip
+%	}
+%	
+%	\addcontentsline{toc}{chapter}{\arabic{chapter}. #1}
+%}
+%
+%\newcommand\Section[1]
+%{
+%	\refstepcounter{section}
+%	\section*
+%	{
+%		\raggedright \centering
+%		\arabic{chapter}. \arabic{section}. #1
+%	}
+%	
+%	\addcontentsline{toc}{section}{\arabic{chapter}. \arabic{section}. #1}
+%}
+%
+%\newcommand\Subsection[1]
+%{
+%	\refstepcounter{subsection}
+%	\subsection*
+%	{
+%		\raggedright \centering
+%		\arabic{chapter}. \arabic{section}. \arabic{subsection}. #1		
+%	}
+%	
+%	\addcontentsline{toc}{subsection}{\arabic{chapter}. \arabic{section}.  \arabic{subsection}. #1}
+%}
+% -------------------------------------------------------------------------
+
+%% точки в оглавлении
+%\usepackage{tocstyle}
+%\usetocstyle{allwithdot}
+%
+%% точка вместо квадратных скобок в списке литературы
+%\makeatletter
+%\renewcommand*{\@biblabel}[1]{\hfill#1.}
+%\makeatother
+
+%TODO: в конечной версии fussy заменить на sloppy
+\sloppy
+
+\begin{document}
+\pagenumbering{gobble}
+
+\chapter*{\centering Аннотация}
+Выпускная квалификацонная работа посвящена разработке программной среды аналитического моделирования информационно-вычислительных сетей.
+
+Стремительное развитие средств связи споровождаются непрерывной сменой сетевых технологий. Для непрерывного количественного и качественного роста компьютерных сетей необходимо развитие теории в этой области и создание методов анализа, направленных на сокращение сроков и повышение качества проектирования компьютерных сетей.
+
+В качестве такой теории выступает теория систем и сетей массового обслуживания.
+Математические методы этой теории обеспечивают возможность решения многочисленных задач расчёта
+характеристик качества функционирования различных компонентов компьютерных сетей.
+
+В первой главе рассмотрена теория, необходимая для построения математических моделей ИВС и расчёта их вероятностно-временных характеристик и характеристик надёжности.
+
+Во второй главе представлены основные моменты программной реалзиации программной среды моделирования ИВС и некоторые ипользованные алгоритмы.
+
+В третьей главе описаны задачи и методология модельного эксперимента и анализ полученный во время эксперимента результатов.
+
+Работа состоит из введения, трёх глав, девятнадцати параграфов списка литературы.
+
+В выпускной работе содержится 2 таблицы и 21 рисунок. Список литературы содержит 9 источников. Общее количество страниц работы - 49.
+
+\end{document}
