@@ -33,7 +33,9 @@
 
 \maketitle
 
-\begin{frame}{Введение}
+\begin{frame}
+\frametitle{Введение}
+
 \begin{block}{Цель}
 Анализ критериев времени и надёжности доставки информации в информационно-вычислительных сетях с множественным методом доступа без коллизий, построенных на основе технологий семейства Ethernet.	
 \end{block}
@@ -48,7 +50,9 @@
 \end{block}
 \end{frame}
 
-\begin{frame}{Введение}
+\begin{frame}
+\frametitle{Введение}
+
 \begin{block}{Методы}
 Модельный эксперимент и математические модели фрагментов сетей
 основываются на математическом аппарате и методах теории систем и сетей массового обслуживания.
@@ -58,11 +62,11 @@
 Разработанная программа должна автоматизировать рутинную работу по вычислению стационарных и интегральных вероятностных характеристик, плотностей распределения сообщений в маршрутах сети и среднего количества маршрутов между любыми двумя узлами сети.
 \end{block}
 
-%\begin{block}{}
-%\end{block}
 \end{frame}
 
-\begin{frame}{Теоретические основы}
+\begin{frame}
+\frametitle{Теоретические основы}
+
 \begin{block}{Сети массового обслуживания}
 СеМО представляет собой совокупность конечного числа \( M \) обслуживающих центров, в которой циркулируют сообщения,
 переходящие в соответствии с маршрутной матрицей из одного центра сети в другой.
@@ -71,7 +75,9 @@
 \end{block}
 \end{frame}
 
-\begin{frame}{Теоретические основы}
+\begin{frame}
+\frametitle{Теоретические основы}
+
 \begin{block}{Однородные экспоненциальные сети}
 В данной работе рассматриваются открытые сети Джексона с бесконечным буфером, обрабатывающие \( F \) входящих потоков.
 
@@ -80,7 +86,10 @@
 \end{block}	
 \end{frame}
 
-\begin{frame}{Теоретические основы}
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Однородные экспоненциальные сети}
+
 \begin{block}{Пуассоновский поток}
 \begin{enumerate}
 	\item Стационарность --- вероятность появления \( k \) событий на любом промежутке времени зависит только от числа \( k \) и от длительности
@@ -95,11 +104,407 @@
 \end{block}
 \end{frame}
 
-\begin{frame}{Теоретические основы}
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Однородные экспоненциальные сети}
+
 \begin{block}{Маршрутная матрица}
 Маршрутная матрица задаёт топологию сети и вероятности переходов сообщения между узлами.
 Для открытой сети в качестве внешнего источника вводится новый узел с индексом \( 0 \).
+\[ P^{m} = \left(\begin{matrix}
+                0 			& P_{0,1}^{m}	& \cdots 	& P_{0,j}^{m} \\
+                P_{1,0}^{m} 	& 0				& \cdots		& P_{1,j} \\
+                \vdots 		& \vdots			& \ddots		& \vdots  \\
+                P_{i,0}^{m} 	& P_{i,1}^{m} 	& \cdots		& 0 \\
+            \end{matrix}\right), \; i,j = \overline{1,n}, \; n - \text{число узлов в сети} \]
 \end{block}
 \end{frame}
+
+\begin{frame}
+\frametitle{Теоретические основы}
+
+\begin{block}{Методика разработки математической модели ИВС}
+В работе используется приближённая декомпозиционная модель сети массового обслуживания.
+
+Методика включает в себя разработку отдельных математических моделей всех составляющих ИВС на всех уровнях декомпозиции и состоит из следующих подэтапов:
+\begin{enumerate}
+	\item  Составление уравнений баланса интенсивностей потоков.
+	\item  Вычислеие коэффициентов передачи из уравнений баланса.
+	\item  Вычисление стационарных вероятностно-временных характеристик \\ (ВВХ) для каждого отдельного элемента СеМО.
+	\item  Вычисиление интегральных ВВХ при взаимодействии двух любых абонентов сети.
+\end{enumerate}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Методика разработки математической модели ИВС}
+	
+\begin{block}{Исходные параметры}
+Исходными параметрами модели являются интенсивности обслуживающих узлов сети \( \mu_{i}^{m} \), интенсивности поступления сообщений из внешнего источника
+\( \lambda_{i}^{m} \) и маршрутная матрица \( P^{m} \) для каждого входного потока \( m = \overline{1, F} \).
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Методика разработки математической модели ИВС}
+
+\begin{block}{Уравнения баланса}
+Уравнения баланса позволяют найти общие интенсивности потоков \( \lambda_{i}^{'m} \) сообщений в стационарном режиме открытой СеМО.
+
+\[ \lambda_{i}^{'m} = e_{i}^{m} \lambda_{0}^{m} \]
+\( e_{i}^{m} \) - коэффициенты передачи, получаемые при решении уравнений баланса,
+\( \lambda_{0}^{m} = \sum\limits_{i = 1}^{n} \lambda_{i}^{m}\) - суммарная интенсивность всех внешних потоков типа \( m \).
+
+Уравнения баланса имеют следующий вид:
+
+\[ \left\{
+		\begin{aligned}
+			& e_{1}^{m} = P_{01}^{m} + e_{1}^{m} P_{11}^{m} + \cdots + e_{n}^{m} P_{n1}^{m} \\
+			& \vdots \\
+			& e_{n}^{m} = P_{0n}^{m} + e_{1}^{m} P_{1n}^{m} + \cdots + e_{n}^{m} P_{nn}^{m}
+		\end{aligned}
+	\right. \]
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Методика разработки математической модели ИВС}
+
+\begin{block}{Коэффициенты загрузки}
+Коэффициент загрузки для узла \( M_{i} \) вычисляется по формуле
+\[ \rho_{i} = \sum\limits_{m = 0}^{F} \rho_{i}^{m}, \: \rho_{i}^{m} = \frac{\lambda_{i}^{'m}}{\mu_{i}^{m}}, \:
+i = \overline{1, n} \]
+\( \rho_{i}^{m} \)- коэффициент использования узла. Для существования стационарного распределения числа сообщений в системе необходимо выполнение условия
+\[ 0 \leqslant \rho_{i}, \rho_{i}^{m} \leqslant 1, \: i = \overline{1, n} \]
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Методика разработки математической модели ИВС}
+
+\begin{block}{Стационарные вероятностно-временные характеристики}
+Для каждого узла  \( M_{i} \) сети определяются следующие вероятностно-временные характеристики:
+
+\begin{columns}[t]
+\column{.5\textwidth}
+\begin{enumerate}
+\item Средняя длительность ожидания обслуживания.
+	\[
+		W_{i} = \frac{ \sum\limits_{m = 0}^{F} \frac{ \rho_{i}^{m} }{ \mu_{i}^{m}} }{ 1 - \rho_{i} }
+	\]
+	
+	\item Средняя длительность пребывания сообщения в узле для потока \( m \).
+	\[ U_{i}^{m} = W_{i} + \frac{1}{\mu_{i}^{m}} \]
+\end{enumerate}
+
+\column{.5\textwidth}
+\begin{enumerate}
+\setcounter{enumi}{2}
+
+	\item Средняя длина очереди сообщений в узле для потока \( m \).
+	\[ L_{i}^{m} = \lambda_{i}^{'m} W_{i} \]
+	
+	\item Среднее число сообщений в узле для потока \( m \)
+	\[ N_{i}^{m} = \lambda_{i}^{'m} U_{i}^{m} \]
+\end{enumerate}
+\end{columns}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Методика разработки математической модели ИВС}
+
+\begin{block}{Интегральные вероятностно-временные характеристики}
+Для определения интегральных ВВХ используются стационарные ВВХ, полученные для каждого узла сети, и анализ маршрутов движения сообщений между двумя абнентами
+\( A_{i} \) и \( A_{j}, \: i \neq j \).
+
+Любой маршрут между двумя любыми абонентами принадлежит к одному из следующих типов:
+\begin{enumerate}
+\item Последовательная обработка сообщений на конечном числе элементов сети.
+
+\begin{figure}[h!]
+		\begin{center}
+			\begin{picture}(200, 20)(-10, -10)
+				\put(0, 0){\circle{20}}
+				\put(-5, -3){\begin{scriptsize} 1 \end{scriptsize}}
+	
+				\put(10, 0){\vector(1, 0){20}}
+				
+				\put(40, 0){\circle{20}}
+				\put(35, -3){\begin{scriptsize} 2 \end{scriptsize}}
+		
+				\put(50, 0){\vector(1, 0){20}}
+				
+				\put(78, -1){\( \dots \)}
+
+				\put(102, 0){\vector(1, 0){20}}
+				
+				\put(132, 0){\circle{20}}
+				\put(119.5, -3){\begin{scriptsize} \( n - 1 \)\end{scriptsize}}
+				
+				\put(142, 0){\vector(1, 0){20}}
+				
+				\put(172, 0){\circle{20}}
+				\put(166.5, -2.5){\begin{scriptsize} \( n \)\end{scriptsize}}
+			\end{picture}
+		\end{center}
+	\end{figure}
+	
+	\[ W = \sum\limits_{i = 1}^{n} W_{i}, \;
+	U^{m} = \sum\limits_{i = 1}^{n} U_{i}^{m}, \;
+	L^{m} = \sum\limits_{i = 1}^{n} L_{i}^{m}, \;
+	N^{m} = \sum\limits_{i= 1}^{n} N_{i}^{m} \]	
+\end{enumerate}
+\end{block}
+\end{frame}
+
+\begin{frame}
+
+\begin{enumerate}
+\setcounter{enumi}{1}
+\item Параллельные варианты обработки с определёнными значениями вероятности выбора рассматриваемого варианта.
+
+\begin{columns}[t]
+\column{.5\textwidth}
+\begin{figure}[h!]
+		\begin{center}
+			\begin{picture}(220, 120)
+				\put(10, 50){\circle{20}}
+				\put(5.5, 47){\begin{scriptsize} \( i \) \end{scriptsize}}
+				
+				\put(70, 100){\begin{scriptsize} \( \beta_{1} \) \end{scriptsize}}
+				\put(20, 50){\vector(4, 3){80}}
+				
+				\put(110, 110){\circle{20}}
+				\put(105, 107){\begin{scriptsize} 1 \end{scriptsize}}
+				
+				\put(120, 110){\vector(4, -3){80}}
+				
+				\put(70, 70){\begin{scriptsize} \( \beta_{2} \) \end{scriptsize}}
+				\put(20, 50){\vector(4, 1){80}}
+				
+				\put(110, 70){\circle{20}}
+				\put(105, 67){\begin{scriptsize} 2 \end{scriptsize}}
+				
+				\put(120, 70){\vector(4, -1){80}}
+				
+				\put(20, 50){\vector(4, -1){80}}				
+				\put(108, 35){\( \vdots \)}
+				
+				\put(70, 25){\begin{scriptsize} \( \beta_{l} \) \end{scriptsize}}
+				\put(20, 50){\vector(2, -1){80}}
+				
+				\put(110, 10){\circle{20}}
+				\put(105.5, 7){\begin{scriptsize} \( l \) \end{scriptsize}}
+				
+				\put(120, 10){\vector(2, 1){80}}
+				
+				\put(210, 50){\circle{20}}
+				\put(205.5, 47){\begin{scriptsize} \( j \) \end{scriptsize}}
+			\end{picture}
+		\end{center}
+	\end{figure}
+	
+\column{.5\textwidth}
+\[ W = W_{i} + \sum\limits_{k = 1}^{l} \beta_{k} W_{k} + W_{j} \]
+\[ U^{m} = U_{i}^{m} + \sum\limits_{k = 1}^{l} \beta_{k} U_{k}^{m} + U_{j}^{m} \]
+\[ L^{m} = L_{i}^{m} + \sum\limits_{k = 1}^{l} \beta_{k} L_{k}^{m} + L_{j}^{m} \]
+\[ N^{m} = N_{i}^{m} + \sum\limits_{k = 1}^{l} \beta_{k} N_{k}^{m} + N_{j}^{m} \]
+\end{columns}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+
+\begin{enumerate}
+\setcounter{enumi}{2}
+\item Комбинация первых двух типов.
+
+\begin{figure}[h!]
+		\begin{center}
+			\begin{picture}(382, 120)
+				\put(10, 50){\circle{20}}
+				\put(5.5, 47){\begin{scriptsize} \( i \) \end{scriptsize}}
+				
+				\put(70, 100){\begin{scriptsize} \( \beta_{1} \) \end{scriptsize}}
+				\put(20, 50){\vector(4, 3){80}}
+				
+				%--------------------------------------------------------------------------
+					\put(110, 110){\circle{20}}
+					\put(105, 107){\begin{scriptsize} 1 \end{scriptsize}}
+	
+					\put(120, 110){\vector(1, 0){15}}
+%				
+%					\put(145, 110){\circle{20}}
+%					\put(140, 107){\begin{scriptsize} 2 \end{scriptsize}}
+		
+%					\put(155, 110){\vector(1, 0){15}}
+
+					\put(138, 109){\( \dots \)}
+
+					\put(154, 110){\vector(1, 0){15}}
+				
+%					\put(237, 110){\circle{20}}
+%					\put(224.5, 107){\begin{scriptsize} \( n - 1 \)\end{scriptsize}}
+%					
+%					\put(247, 110){\vector(1, 0){15}}
+				
+					\put(179, 110){\circle{20}}
+					\put(174.5, 107.5){\begin{scriptsize} \( n \)\end{scriptsize}}	
+				%--------------------------------------------------------------------------
+				
+				\put(189, 110){\vector(4, -3){80}}
+				
+				\put(70, 70){\begin{scriptsize} \( \beta_{2} \) \end{scriptsize}}
+				\put(20, 50){\vector(4, 1){80}}
+				
+				%--------------------------------------------------------------------------					
+					\put(110, 70){\circle{20}}
+					\put(105, 67){\begin{scriptsize} 1 \end{scriptsize}}
+	
+					\put(120, 70){\vector(1, 0){15}}
+%				
+%					\put(145, 70){\circle{20}}
+%					\put(140, 67){\begin{scriptsize} 2 \end{scriptsize}}
+		
+%					\put(155, 70){\vector(1, 0){15}}
+
+					\put(138, 69){\( \dots \)}
+
+					\put(154, 70){\vector(1, 0){15}}
+				
+%					\put(237, 70){\circle{20}}
+%					\put(224.5, 67){\begin{scriptsize} \( n - 1 \)\end{scriptsize}}
+%					
+%					\put(247, 70){\vector(1, 0){15}}
+				
+					\put(179, 70){\circle{20}}
+					\put(174.5, 67.5){\begin{scriptsize} \( n \)\end{scriptsize}}					
+				%--------------------------------------------------------------------------
+				
+				\put(189, 70){\vector(4, -1){80}}
+				
+				\put(20, 50){\vector(4, -1){80}}				
+				\put(108, 35){\( \vdots \)}
+				
+				\put(70, 25){\begin{scriptsize} \( \beta_{l} \) \end{scriptsize}}
+				\put(20, 50){\vector(2, -1){80}}
+				
+				%--------------------------------------------------------------------------					
+					\put(110, 10){\circle{20}}
+					\put(105, 7){\begin{scriptsize} 1 \end{scriptsize}}
+	
+					\put(120, 10){\vector(1, 0){15}}
+%				
+%					\put(145, 10){\circle{20}}
+%					\put(140, 7){\begin{scriptsize} 2 \end{scriptsize}}
+		
+%					\put(155, 10){\vector(1, 0){15}}
+
+					\put(138, 9){\( \dots \)}
+
+					\put(154, 10){\vector(1, 0){15}}
+				
+%					\put(237, 10){\circle{20}}
+%					\put(224.5, 7){\begin{scriptsize} \( n - 1 \)\end{scriptsize}}
+%					
+%					\put(247, 10){\vector(1, 0){15}}
+				
+					\put(179, 10){\circle{20}}
+					\put(174.5, 7.5){\begin{scriptsize} \( n \)\end{scriptsize}}					
+				%--------------------------------------------------------------------------
+				
+				\put(189, 10){\vector(2, 1){80}}
+				
+				\put(279, 50){\circle{20}}
+				\put(274.5, 47){\begin{scriptsize} \( j \) \end{scriptsize}}
+			\end{picture}
+		\end{center}
+	\end{figure}	
+
+\[ W = W_{i} + \sum\limits_{k = 1}^{l} \left( \beta_{k} \sum\limits_{x = 1}^{n} W_{x} \right) + W_{j}, \; U^{m} = U_{i}^{m} + \sum\limits_{k = 1}^{l} \left( \beta_{k} \sum\limits_{x = 1}^{n} U_{x}^{m} \right) + U_{j}^{m}, \]
+\[ L^{m} = L_{i}^{m} + \sum\limits_{k = 1}^{l} \left( \beta_{k} \sum\limits_{x = 1}^{n} L_{x}^{m} \right) + L_{j}^{m}, \; N^{m} = N_{i}^{m} + \sum\limits_{k = 1}^{l} \left( \beta_{k} \sum\limits_{x = 1}^{n} N_{x}^{m} \right) + N_{j}^{m} \]
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Методика разработки математической модели ИВС}
+
+\begin{block}{Вероятность выбора маршрута}
+Для вычисления вероятности выбора альтернативных маршрутов нужно учитывать вероятности перехода между узлами, заданные маршрутной матрицей \( P^{m} \), и нормирующее условие
+\( \sum\limits_{k = 1}^{l} \beta_{k} = 1 \).
+
+Вероятность выбора маршрута определяется отношением произведения вероятностей перехода требований из узла \( M_{ R_{j}^{i} } \) в узел \( M_{ R_{j+1}^{i} } \)
+\( i \) - го маршрута к сумме произведений вероятностей переходов требований всех альтернативных маршрутов (нормировочной величине).
+\[ \beta_{i} = \frac{ \prod\limits_{j} P_{ R_{j}^{i}, R_{j + 1}^{i} } }{ \sum\limits_{i} \left( \prod\limits_{j} P_{ R_{j}^{i}, R_{j+1}^{i} } \right) } \]
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Методика разработки математической модели ИВС}
+
+\begin{block}{Плотность распределения количества сообщений в маршруте}
+Плотность распределения количества сообщений для произвольного \\ маршрута определяется следующим способом:
+\[ g_{i} (t) = \sum\limits_{i = 1}^{n} H_{i} (\mu_{i} - \lambda_{i}^{'}) e^{ -(\mu_{i} - \lambda_{i}^{'}) t } \]
+\[ H_{i} = \prod\limits_{ \substack{ j = 1 \\ j \neq i } }^{n} \frac{ \mu_{j} - \lambda_{j}^{'} }{ \mu_{j} - \lambda_{j}^{'} - \mu_{i} - \lambda_{i}^{'} } \]
+где \( n \) - количество узлов в маршруте.
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Теоретические основы}
+\framesubtitle{Методика разработки математической модели ИВС}
+
+\begin{block}{Определение интенсивностей обслуживающих приборов, работающих на основе технологий семейства Ethernet}
+Интенсивности обслуживания \( \mu \) определяются для кадров формата Ethernet Version 2.
+
+\begin{table}[h!]
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline Preamble & DA & SA & EthernetType & Data & Checksum \\
+\hline 8 & 6 & 6 & 2 & 46 - 1500 & 4 \\
+\hline
+\end{tabular}
+\end{table}
+
+Итенсивность обслуживания \( \mu \) есть величина обратно пропорциональная периоду следования кадров \( T = 8 * (X + 26) * bt + IFG \).
+\[ \mu = \frac{1}{T} = \frac{1}{ 8 * (X + 26) * bt + IFG } \]
+\end{block}
+\end{frame}
+
+\begin{frame}
+\begin{table}[h!]
+	\begin{tabular}{|p{0.22\textwidth}|p{0.22\textwidth}|p{0.22\textwidth}|p{0.22\textwidth}|}
+	\hline Технология Ethernet & Битовая скорость & Длина кадра (байт) & Интенсивность \( \mu \) (кадр/мс) \\
+	\hline \multirow{2}{*}{Fast Ethernet} 	& \multirow{2}{*}{100 Мбит/с} 	& 72 	& 148.800 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 8.127 \\ 
+	
+	\hline \multirow{2}{*}{Gigabit Ethernet} 	& \multirow{2}{*}{1 Гбит/с} 		& 72 	& 1488.095 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 81.274 \\ 
+	
+	\hline \multirow{2}{*}{10G Ethernet} 		& \multirow{2}{*}{10 Гбит/с} 	& 72 	& 14880.952 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 812.744 \\ 
+	
+	\hline \multirow{2}{*}{40G Ethernet} 		& \multirow{2}{*}{40 Гбит/с} 	& 72 	& 59523.800 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 3250.975 \\ 
+	
+	\hline \multirow{2}{*}{100G Ethernet} 	& \multirow{2}{*}{100 Гбит/с} 	& 72 	& 148809.524 \\
+	\hhline{~~--}				  			& \multirow{2}{*}{}           	& 1526 	& 8127.438 \\
+	\hline
+	\end{tabular}
+\end{table}
+\end{frame}
+
+%\begin{frame}
+%
+%\begin{block}{}
+%\end{block}
+%\end{frame}
 
 \end{document}
